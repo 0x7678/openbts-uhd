@@ -113,6 +113,66 @@ private:
   bool   firstRead;
 #endif
 
+  /** Mess of constants used to control various hardware on the USRP */
+  static const unsigned POWER_UP = (1 << 7);
+  static const unsigned RX_TXN = (1 << 6);
+  static const unsigned RX2_RX1N = (1 << 6);
+  static const unsigned ENABLE = (1 << 5);
+  static const unsigned PLL_LOCK_DETECT = (1 << 2);
+  
+  static const unsigned SPI_ENABLE_TX_A = 0x10;
+  static const unsigned SPI_ENABLE_RX_A = 0x20;
+  static const unsigned SPI_ENABLE_TX_B = 0x40;
+  static const unsigned SPI_ENABLE_RX_B = 0x80;
+
+  static const unsigned SPI_FMT_MSB = (0 << 7);
+  static const unsigned SPI_FMT_HDR_0 = (0 << 5);
+
+  static const float    LO_OFFSET;
+  //static const float    LO_OFFSET = 4.0e6;
+
+  static const unsigned R_DIV = 16;
+  static const unsigned P = 1;
+  static const unsigned CP2 = 7;
+  static const unsigned CP1 = 7;
+  static const unsigned DIVSEL = 0;
+  unsigned DIV2; // changes with GSM band
+  unsigned freq_mult; // changes with GSM band
+  static const unsigned CPGAIN = 0;
+  
+  // R-Register Common Values
+  static const unsigned R_RSV = 0; // bits 23,22
+  static const unsigned BSC = 3;   // bits 21,20 Div by 8 to be safe
+  static const unsigned TEST = 0;  // bit 19
+  static const unsigned LDP = 1;   // bit 18
+  static const unsigned ABP = 0;   // bit 17,16   3ns
+  
+  // N-Register Common Values
+  static const unsigned N_RSV = 0; // bit 7
+  
+  // Control Register Common Values
+  static const unsigned PD = 0;    // bits 21,20   Normal operation
+  static const unsigned PL = 0;    // bits 13,12   11mA
+  static const unsigned MTLD = 1;  // bit 11       enabled
+  static const unsigned CPG = 0;   // bit 10       CP setting 1
+  static const unsigned CP3S = 0;  // bit 9        Normal
+  static const unsigned PDP = 1;   // bit 8        Positive
+  static const unsigned MUXOUT = 1;// bits 7:5     Digital Lock Detect
+  static const unsigned CR = 0;    // bit 4        Normal
+  static const unsigned PC = 1;    // bits 3,2     Core power 10mA
+
+  // ATR register value
+  static const int FR_ATR_MASK_0 = 20;
+  static const int FR_ATR_TXVAL_0 = 21;
+  static const int FR_ATR_RXVAL_0 = 22;
+
+  /** Compute register values to tune daughterboard to desired frequency */
+  bool compute_regs(double freq,
+		    unsigned *R,
+		    unsigned *control,
+		    unsigned *N,
+		    double *actual_freq);
+
   /** Set the transmission frequency */
   bool tx_setFreq(double freq, double *actual_freq);
 

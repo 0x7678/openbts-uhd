@@ -32,11 +32,16 @@ enum dsp_err {
     DSP_ERR_UNSUPPORTED,
 };
 
+/* Multiply and accumulate */ 
 void mac_real(cmplx_float *a, cmplx_float *b, cmplx_float *c);
 void mac_cmplx(cmplx_float *a, cmplx_float *b, cmplx_float *c);
 
-void mac_real_vec_3(cmplx_float *a, cmplx_float *b, cmplx_float *c);
+/* Vector multiply and accumulate */ 
 void mac_real_vec_4(cmplx_float *a, cmplx_float *b, cmplx_float *c);
+
+/* Vector multiply, accumulate, and sum into a single complex value */ 
+void mac_sum_real_vec_3(cmplx_float *a, cmplx_float *b, cmplx_float *c);
+void mac_sum_real_vec_4(cmplx_float *a, cmplx_float *b, cmplx_float *c);
 
 /* All sample vectors (including real) stored in complex form */ 
 int convlv_nosym(struct float_vec *a_vec, struct float_vec *b_vec,

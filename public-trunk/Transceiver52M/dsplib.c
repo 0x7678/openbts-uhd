@@ -47,14 +47,22 @@ void mac_cmplx(cmplx_float *a, cmplx_float *b, cmplx_float *c)
     c->q += a->i * b->q + a->q * b->i;
 }
 
-void mac_real_vec_3(cmplx_float *a, cmplx_float *b, cmplx_float *c)
+void mac_real_vec_4(cmplx_float *a, cmplx_float *b, cmplx_float *c)
+{
+    mac_real(&a[0], &b[3], &c[0]);
+    mac_real(&a[1], &b[2], &c[1]);
+    mac_real(&a[2], &b[1], &c[2]);
+    mac_real(&a[3], &b[0], &c[3]);
+}
+
+void mac_sum_real_vec_3(cmplx_float *a, cmplx_float *b, cmplx_float *c)
 {
     mac_real(&a[0], &b[2], c);
     mac_real(&a[1], &b[1], c);
     mac_real(&a[2], &b[0], c);
 }
 
-void mac_real_vec_4(cmplx_float *a, cmplx_float *b, cmplx_float *c)
+void mac_sum_real_vec_4(cmplx_float *a, cmplx_float *b, cmplx_float *c)
 {
     mac_real(&a[0], &b[3], c);
     mac_real(&a[1], &b[2], c);
@@ -63,17 +71,7 @@ void mac_real_vec_4(cmplx_float *a, cmplx_float *b, cmplx_float *c)
 }
 #endif
 
-void mac_cmplx_vec_1(cmplx_float *a, cmplx_float *b, cmplx_float *c)
-{
-    mac_cmplx(a, b, c);
-}
-
-void mac_real_vec_1(cmplx_float *a, cmplx_float *b, cmplx_float *c)
-{
-    mac_real(a, b, c);
-}
-
-void mac_cmplx_vec_4(cmplx_float *a, cmplx_float *b, cmplx_float *c)
+static void mac_sum_cmplx_vec_4(cmplx_float *a, cmplx_float *b, cmplx_float *c)
 {
     mac_cmplx(&a[0], &b[3], c);
     mac_cmplx(&a[1], &b[2], c);
@@ -81,44 +79,57 @@ void mac_cmplx_vec_4(cmplx_float *a, cmplx_float *b, cmplx_float *c)
     mac_cmplx(&a[3], &b[0], c);
 }
 
-void mac_cmplx_vec_7(cmplx_float *a, cmplx_float *b, cmplx_float *c)
+static void mac_sum_cmplx_vec_7(cmplx_float *a, cmplx_float *b, cmplx_float *c)
 {
-    mac_cmplx_vec_4(&a[0], &b[3], c);
-    mac_cmplx_vec_1(&a[4], &b[2], c);
-    mac_cmplx_vec_1(&a[5], &b[1], c);
-    mac_cmplx_vec_1(&a[6], &b[0], c);
+    mac_sum_cmplx_vec_4(&a[0], &b[3], c);
+    mac_cmplx          (&a[4], &b[2], c);
+    mac_cmplx          (&a[5], &b[1], c);
+    mac_cmplx          (&a[6], &b[0], c);
 }
 
-void mac_cmplx_vec_16(cmplx_float *a, cmplx_float *b, cmplx_float *c)
+static void mac_sum_cmplx_vec_16(cmplx_float *a, cmplx_float *b, cmplx_float *c)
 {
-    mac_cmplx_vec_4(&a[0],  &b[12], c);
-    mac_cmplx_vec_4(&a[4],  &b[8],  c);
-    mac_cmplx_vec_4(&a[8],  &b[4],  c);
-    mac_cmplx_vec_4(&a[12], &b[0],  c);
+    mac_sum_cmplx_vec_4(&a[0],  &b[12], c);
+    mac_sum_cmplx_vec_4(&a[4],  &b[8],  c);
+    mac_sum_cmplx_vec_4(&a[8],  &b[4],  c);
+    mac_sum_cmplx_vec_4(&a[12], &b[0],  c);
 }
 
-void mac_real_vec_16(cmplx_float *a, cmplx_float *b, cmplx_float *c)
+static void mac_sum_real_vec_16(cmplx_float *a, cmplx_float *b, cmplx_float *c)
 {
-    mac_real_vec_4(&a[0],  &b[12], c);
-    mac_real_vec_4(&a[4],  &b[8],  c);
-    mac_real_vec_4(&a[8],  &b[4],  c);
-    mac_real_vec_4(&a[12], &b[0],  c);
+    cmplx_float d[4] = { 0, 0, 0, 0 };
+
+    mac_real_vec_4(&a[0],  &b[12], d);
+    mac_real_vec_4(&a[4],  &b[8],  d);
+    mac_real_vec_4(&a[8],  &b[4],  d);
+    mac_real_vec_4(&a[12], &b[0],  d);
+
+    c->i = d[0].i + d[1].i + d[2].i + d[3].i;
+    c->q = d[0].q + d[1].q + d[2].q + d[3].q;
 }
 
-void mac_real_vec_21(cmplx_float *a, cmplx_float *b, cmplx_float *c)
+static void mac_sum_real_vec_21(cmplx_float *a, cmplx_float *b, cmplx_float *c)
 {
-    mac_real_vec_16(&a[0],  &b[5], c);
-    mac_real_vec_4 (&a[16], &b[1], c);
-    mac_real_vec_1 (&a[20], &b[0], c);
+    cmplx_float d[4] = { 0, 0, 0, 0 };
+
+    mac_real_vec_4(&a[0],  &b[17], d);
+    mac_real_vec_4(&a[4],  &b[13], d);
+    mac_real_vec_4(&a[8],  &b[9],  d);
+    mac_real_vec_4(&a[12], &b[5],  d);
+    mac_real_vec_4(&a[16], &b[1],  d);
+    mac_real      (&a[20], &b[0],  d);
+
+    c->i = d[0].i + d[1].i + d[2].i + d[3].i;
+    c->q = d[0].q + d[1].q + d[2].q + d[3].q;
 }
 
-void mac_cmplx_vec_41(cmplx_float *a, cmplx_float *b, cmplx_float *c)
+static void mac_sum_cmplx_vec_41(cmplx_float *a, cmplx_float *b, cmplx_float *c)
 {
-    mac_cmplx_vec_16(&a[0],  &b[25], c);
-    mac_cmplx_vec_16(&a[16], &b[9],  c);
-    mac_cmplx_vec_4 (&a[32], &b[5],  c);
-    mac_cmplx_vec_4 (&a[36], &b[1],  c);
-    mac_cmplx_vec_1 (&a[40], &b[0],  c);
+    mac_sum_cmplx_vec_16(&a[0],  &b[25], c);
+    mac_sum_cmplx_vec_16(&a[16], &b[9],  c);
+    mac_sum_cmplx_vec_4 (&a[32], &b[5],  c);
+    mac_sum_cmplx_vec_4 (&a[36], &b[1],  c);
+    mac_cmplx           (&a[40], &b[0],  c);
 }
           
 int convlv_nosym(struct float_vec *a_vec, struct float_vec *b_vec,
@@ -147,49 +158,49 @@ int convlv_nosym(struct float_vec *a_vec, struct float_vec *b_vec,
     case 1:
         if (b_vec->real)
             return -DSP_ERR_UNSUPPORTED;
-        mac_vec_func = mac_cmplx_vec_1;
+        mac_vec_func = mac_cmplx;
         break;
     case 3:
         if (!b_vec->real)
             return -DSP_ERR_UNSUPPORTED;
-        mac_vec_func = mac_real_vec_3;
+        mac_vec_func = mac_sum_real_vec_3;
         break;
     case 4:
         if (!b_vec->real)
             return -DSP_ERR_UNSUPPORTED;
-        mac_vec_func = mac_real_vec_4;
+        mac_vec_func = mac_sum_real_vec_4;
         break;
     case 7:
         if (b_vec->real)
             return -DSP_ERR_UNSUPPORTED;
-        mac_vec_func = mac_cmplx_vec_7;
+        mac_vec_func = mac_sum_cmplx_vec_7;
         break;
     case 16:
         if (b_vec->real)
-            mac_vec_func = mac_real_vec_16;
+            mac_vec_func = mac_sum_real_vec_16;
         else
-            mac_vec_func = mac_cmplx_vec_16;
+            mac_vec_func = mac_sum_cmplx_vec_16;
         break;
     case 21:
         if (!b_vec->real)
             return -DSP_ERR_UNSUPPORTED;
-        mac_vec_func = mac_real_vec_21;
+        mac_vec_func = mac_sum_real_vec_21;
         break;
     case 41:
         if (b_vec->real)
             return -DSP_ERR_UNSUPPORTED;
-        mac_vec_func = mac_cmplx_vec_41;
+        mac_vec_func = mac_sum_cmplx_vec_41;
         break;
     default:
         return -DSP_ERR_UNSUPPORTED;
     }
 
-    memset((void *) c, 0, c_vec->len * sizeof(cmplx_float));
-
-    end_idx = c_vec->len + start_idx;
     a = a_vec->smpls;
     b = b_vec->smpls;
     c = c_vec->smpls;
+
+    memset((void *) c, 0, c_vec->len * sizeof(cmplx_float));
+    end_idx = c_vec->len + start_idx;
 
     /* Convolve head */
     for (i = start_idx; i < b_vec->len; i++) {

@@ -43,6 +43,7 @@ libtransceiver_la_SOURCES = \
 	radioInterface.cpp \
 	sigProcLib.cpp \
 	dsplib.c \
+	dsplib_neon.S \
 	Transceiver.cpp
 
 noinst_PROGRAMS = \

@@ -31,6 +31,10 @@
 
 #include <Logger.h>
 
+extern "C" {
+  #include <dsplib.h>
+}
+
 #define TABLESIZE 1024
 
 /** Lookup tables for trigonometric approximation */
@@ -264,7 +268,6 @@ void GMSKReverseRotate(signalVector &x) {
   }
 }
 
-
 signalVector* convolve(const signalVector *a,
 		       const signalVector *b,
 		       signalVector *c,
@@ -275,8 +278,9 @@ signalVector* convolve(const signalVector *a,
   if ((a==NULL) || (b==NULL)) return NULL; 
   int La = a->size();
   int Lb = b->size();
+  struct float_vec a_vec, b_vec, c_vec;
 
-  int startIndex;
+  int startIndex, ret;
   unsigned int outSize;
   switch (spanType) {
     case FULL_SPAN:
@@ -325,52 +329,20 @@ signalVector* convolve(const signalVector *a,
   int stopIndex = startIndex + outSize;
   switch (b->getSymmetry()) {
   case NONE:
-    {
-      while (t < stopIndex) {
-	signalVector::const_iterator aP = aStart+t;
-	signalVector::const_iterator bP = bStart;
-	if (a->isRealOnly() && b->isRealOnly()) {
-	  float sum = 0.0;
-	  while (bP < bEnd) {
-	    if (aP < aStart) break;
-	    if (aP < aEnd) sum += (aP->real())*(bP->real());
-	    aP--;
-	    bP++;
-	  }
-	  *cPtr++ = sum;
-	}
-	else if (a->isRealOnly()) {
-	  complex sum = 0.0;
-	  while (bP < bEnd) {
-	    if (aP < aStart) break;
-	    if (aP < aEnd) sum += (*bP)*(aP->real());
-	    aP--;
-	    bP++;
-	  }
-	  *cPtr++ = sum;
-	}
-	else if (b->isRealOnly()) {
-	  complex sum = 0.0;
-	  while (bP < bEnd) {
-	    if (aP < aStart) break;
-	    if (aP < aEnd) sum += (*aP)*(bP->real());
-	    aP--;
-	    bP++;
-	  }
-	  *cPtr++ = sum;
-	}
-	else {
-	  complex sum = 0.0;
-	  while (bP < bEnd) {
-	    if (aP < aStart) break;
-	    if (aP < aEnd) sum += (*aP)*(*bP);
-	    aP--;
-	    bP++;
-	  }
-	  *cPtr++ = sum;
-	}
-	t++;
-      }
+    a_vec.smpls = (cmplx_float *) a->begin();
+    a_vec.len = a->size();
+    a_vec.real = a->isRealOnly();
+
+    b_vec.smpls = (cmplx_float *) b->begin();
+    b_vec.len = b->size();
+    b_vec.real = b->isRealOnly();
+
+    c_vec.smpls = (cmplx_float *) c->begin();
+    c_vec.len = c->size();
+
+    ret = convlv_nosym(&a_vec, &b_vec, &c_vec, startIndex);
+    if (ret < 0) {
+      LOG(ERROR) << "Convolution failure: unsupported length";
     }
     break;
   case ABSSYM:

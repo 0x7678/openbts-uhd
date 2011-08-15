@@ -42,6 +42,7 @@ noinst_LTLIBRARIES = libtransceiver.la
 libtransceiver_la_SOURCES = \
 	radioInterface.cpp \
 	sigProcLib.cpp \
+	dsplib.c \
 	Transceiver.cpp
 
 noinst_PROGRAMS = \
@@ -54,6 +55,7 @@ noinst_HEADERS = \
 	radioInterface.h \
 	radioDevice.h \
 	sigProcLib.h \
+	dsplib.h \
 	Transceiver.h \
 	USRPDevice.h
 

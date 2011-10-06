@@ -74,7 +74,6 @@ int main(int argc, char *argv[])
 
   RadioDevice *usrp = RadioDevice::make(1625e3/6.0);
   if (!usrp->open()) {
-    //delete usrp;
     return EXIT_FAILURE;
   }
   RadioInterface* radio = new RadioInterface(usrp,3);
@@ -82,12 +81,11 @@ int main(int argc, char *argv[])
   trx->receiveFIFO(radio->receiveFIFO());
 
   trx->start();
-  //int i = 0;
-  while(!gbShutdown) { sleep(1); }//i++; if (i==60) break;}
+  while(!gbShutdown) {
+    sleep(1); 
+  }
 
   cout << "Shutting down transceiver..." << endl;
 
-//  trx->stop();
   delete trx;
-//  delete radio;
 }

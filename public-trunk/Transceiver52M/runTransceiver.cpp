@@ -34,6 +34,12 @@
 #include <Logger.h>
 #include <Configuration.h>
 
+#ifdef RESAMPLE
+  #define DEVICERATE 400e3
+#else
+  #define DEVICERATE 1625e3/6 
+#endif
+
 using namespace std;
 
 ConfigurationTable gConfig;
@@ -72,7 +78,7 @@ int main(int argc, char *argv[])
 
   srandom(time(NULL));
 
-  RadioDevice *usrp = RadioDevice::make(1625e3/6.0);
+  RadioDevice *usrp = RadioDevice::make(DEVICERATE);
   if (!usrp->open()) {
     return EXIT_FAILURE;
   }

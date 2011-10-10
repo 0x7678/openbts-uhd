@@ -22,17 +22,9 @@
 #include <radioInterface.h>
 #include <Logger.h>
 
-/* Unset if the device cannot handle arbitrary transfer sizes */
-#define TX_FULL_BUFFER
-
 /* Device side buffers */
 static short rx_buf[OUTCHUNK * 2 * 2];
 static short tx_buf[INCHUNK * 2 * 2];
-
-/* Maintain tx write index if we can't send full buffers */
-#ifndef TX_FULL_BUFFER
-static int tx_wr_indx = 0;
-#endif
 
 /* Complex float to short conversion */
 static int float_to_short(short *shrt_out, float *flt_in, int num)
@@ -79,7 +71,6 @@ void RadioInterface::pullBuffer()
 	rcvCursor += num_rd;
 }
 
-#ifdef TX_FULL_BUFFER
 /* Send timestamped chunk to the device with arbitrary size */ 
 void RadioInterface::pushBuffer()
 {
@@ -98,33 +89,3 @@ void RadioInterface::pushBuffer()
 	writeTimestamp += (TIMESTAMP) num_smpls;
 	sendCursor = 0;
 }
-#else
-/* Send a timestamped chunk to the device with fixed size */ 
-void RadioInterface::pushBuffer()
-{
-	if (sendCursor < INCHUNK)
-		return;
-
-	float_to_short(tx_buf + 2 * tx_wr_indx, sendBuffer, sendCursor);
-
-	/* Write samples. Fail if we don't get what we want. */
-	int num_smpls = mRadio->writeSamples(tx_buf,
-					     INCHUNK,
-					     &underrun,
-					     writeTimestamp);
-
-	assert(num_smpls <= tx_wr_indx);
-	writeTimestamp += (TIMESTAMP) num_smpls;
-
-	/* Update buffer indices */
-	if (num_smpls == tx_wr_indx) {
-		tx_wr_indx = 0;
-	} else {
-		sz = (tx_wr_indx - num_smpls) * 2 * sizeof(short);
-		memmove(tx_buf, tx_buf + 2 * num_smpls, sz);
-		tx_wr_indx = tx_wr_indx - num_smpls;
-	}
-
-	sendCursor = 0;
-}
-#endif

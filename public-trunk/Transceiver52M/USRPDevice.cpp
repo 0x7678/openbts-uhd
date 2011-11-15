@@ -58,12 +58,18 @@ const dboardConfigType dboardConfig = TXA_RXA;
 const dboardConfigType dboardConfig = TXA_RXB;
 #endif
 
-const double USRPDevice::masterClockRate = 52.0e6;
+#ifndef RESAMPLE
+# define MASTER_CLOCK_RATE 52.0e6 
+#else
+# define MASTER_CLOCK_RATE 64.0e6
+#endif
+
+const double USRPDevice::masterClockRate = MASTER_CLOCK_RATE; 
 
 USRPDevice::USRPDevice (double _desiredSampleRate, bool skipRx)
   : skipRx(skipRx)
 {
-  LOG(INFO) << "creating USRP device...";
+  LOG(INFO) << "creating USRP with " << masterClockRate / 1e6 << " MHz clock";
   decimRate = (unsigned int) round(masterClockRate/_desiredSampleRate);
   actualSampleRate = masterClockRate/decimRate;
   rxGain = 0;

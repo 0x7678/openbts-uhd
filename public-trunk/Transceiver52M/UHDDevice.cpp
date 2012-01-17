@@ -22,6 +22,7 @@
 #include "radioDevice.h"
 #include "Threads.h"
 #include "Logger.h"
+#include <uhd/version.hpp>
 #include <uhd/property_tree.hpp>
 #include <uhd/usrp/multi_usrp.hpp>
 #include <uhd/utils/thread_priority.hpp>
@@ -405,8 +406,8 @@ bool uhd_device::parse_dev_type()
 	b100_str2 = mboard_str.find("B100");
 
 	if (usrp1_str != std::string::npos) {
-		LOG(ERROR) << "USRP1 is not supported using the UHD driver";
-		LOG(ERROR) << "Please compile with GNU Radio libusrp support";
+		LOG(ALARM) << "USRP1 is not supported using the UHD driver";
+		LOG(ALARM) << "Please compile with GNU Radio libusrp support";
 		return false;
 	}
 
@@ -574,6 +575,7 @@ int uhd_device::check_rx_md_err(uhd::rx_metadata_t &md, ssize_t num_smpls)
 
 		switch (md.error_code) {
 		case uhd::rx_metadata_t::ERROR_CODE_TIMEOUT:
+			LOG(ALARM) << "UHD: Receive timed out";
 			return ERROR_UNRECOVERABLE;
 		case uhd::rx_metadata_t::ERROR_CODE_OVERFLOW:
 		case uhd::rx_metadata_t::ERROR_CODE_LATE_COMMAND:
@@ -586,7 +588,7 @@ int uhd_device::check_rx_md_err(uhd::rx_metadata_t &md, ssize_t num_smpls)
 
 	// Missing timestamp
 	if (!md.has_time_spec) {
-		LOG(ERROR) << "UHD: Received packet missing timestamp";
+		LOG(ALARM) << "UHD: Received packet missing timestamp";
 		return ERROR_UNRECOVERABLE;
 	}
 
@@ -594,7 +596,8 @@ int uhd_device::check_rx_md_err(uhd::rx_metadata_t &md, ssize_t num_smpls)
 
 	// Monotonicity check
 	if (ts < prev_ts) {
-		LOG(ERROR) << "UHD: Loss of monotonic: " << ts.get_real_secs();
+		LOG(ALARM) << "UHD: Loss of monotonic: " << ts.get_real_secs();
+		LOG(ERROR) << "UHD: Current time: " << ts.get_real_secs();
 		LOG(ERROR) << "UHD: Previous time: " << prev_ts.get_real_secs();
 		return ERROR_TIMING;
 	} else {
@@ -644,7 +647,8 @@ int uhd_device::readSamples(short *buf, int len, bool *overrun,
 		rc = check_rx_md_err(metadata, num_smpls);
 		switch (rc) {
 		case ERROR_UNRECOVERABLE:
-			LOG(ALARM) << "Unrecoverable error, exiting...";
+			LOG(ALARM) << "UHD: Version " << uhd::get_version_string();
+			LOG(ALARM) << "UHD: Unrecoverable error, exiting...";
 			exit(-1);
 		case ERROR_TIMING:
 			restart(prev_ts);
@@ -720,8 +724,12 @@ int uhd_device::writeSamples(short *buf, int len, bool *underrun,
 					uhd::io_type_t::COMPLEX_INT16,
 					uhd::device::SEND_MODE_FULL_BUFF);
 
-	if (num_smpls != (unsigned)len)
-		LOG(ERROR) << "UHD: Sent fewer samples than requested";
+	if (num_smpls != (unsigned)len) {
+		LOG(ALARM) << "UHD: Device send timed out";
+		LOG(ALARM) << "UHD: Version " << uhd::get_version_string();
+		LOG(ALARM) << "UHD: Unrecoverable error, exiting...";
+		exit(-1);
+	}
 
 	return num_smpls;
 }

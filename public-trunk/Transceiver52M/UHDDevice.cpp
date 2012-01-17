@@ -331,8 +331,8 @@ double uhd_device::set_rates(double rate)
 	// Make sure we can set the master clock rate on this device
 	actual_clk_rt = usrp_dev->get_master_clock_rate();
 	if (actual_clk_rt > U1_DEFAULT_CLK_RT) {
-		LOG(ERROR) << "Cannot set clock rate on this device";
-		LOG(ERROR) << "Please compile with host resampling support";
+		LOG(ALARM) << "Cannot set clock rate on this device";
+		LOG(ALARM) << "Please compile with host resampling support";
 		return -1.0;
 	}
 
@@ -341,7 +341,8 @@ double uhd_device::set_rates(double rate)
 	actual_clk_rt = usrp_dev->get_master_clock_rate();
 
 	if (actual_clk_rt != master_clk_rt) {
-		LOG(ERROR) << "Failed to set master clock rate";
+		LOG(ALARM) << "Failed to set master clock rate";
+		LOG(ALARM) << "Actual clock rate " << actual_clk_rt;
 		return -1.0;
 	}
 #endif
@@ -352,11 +353,11 @@ double uhd_device::set_rates(double rate)
 	actual_rt = usrp_dev->get_tx_rate();
 
 	if (actual_rt != rate) {
-		LOG(ERROR) << "Actual sample rate differs from desired rate";
+		LOG(ALARM) << "Actual sample rate differs from desired rate";
 		return -1.0;
 	}
 	if (usrp_dev->get_rx_rate() != actual_rt) {
-		LOG(ERROR) << "Transmit and receive sample rates do not match";
+		LOG(ALARM) << "Transmit and receive sample rates do not match";
 		return -1.0;
 	}
 
@@ -429,7 +430,7 @@ bool uhd_device::open()
 	uhd::device_addr_t args("");
 	uhd::device_addrs_t dev_addrs = uhd::device::find(args);
 	if (dev_addrs.size() == 0) {
-		LOG(ERROR) << "No UHD devices found";
+		LOG(ALARM) << "No UHD devices found";
 		return false;
 	}
 
@@ -438,7 +439,7 @@ bool uhd_device::open()
 	try {
 		usrp_dev = uhd::usrp::single_usrp::make(dev_addrs[0]);
 	} catch(...) {
-		LOG(ERROR) << "UHD make failed";
+		LOG(ALARM) << "UHD make failed";
 		return false;
 	}
 
@@ -643,7 +644,7 @@ int uhd_device::readSamples(short *buf, int len, bool *overrun,
 		rc = check_rx_md_err(metadata, num_smpls);
 		switch (rc) {
 		case ERROR_UNRECOVERABLE:
-			LOG(ERROR) << "UHD: Unrecoverable error, exiting.";
+			LOG(ALARM) << "Unrecoverable error, exiting...";
 			exit(-1);
 		case ERROR_TIMING:
 			restart(prev_ts);

@@ -91,7 +91,7 @@ AS_IF([test "x$with_usrp1" = "xyes"], [
         AC_DEFINE(HAVE_LIBUSRP_3_3, 1, Define to 1 if you have libusrp >= 3.3)
     fi
 ],
-    [PKG_CHECK_MODULES(UHD, uhd)
+    [PKG_CHECK_MODULES(UHD, uhd >= 003.002.000)
     AC_DEFINE(USE_UHD, 1, Define to 1 if using UHD)
 ])
 

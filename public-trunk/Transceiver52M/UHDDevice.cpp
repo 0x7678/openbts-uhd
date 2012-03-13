@@ -596,9 +596,9 @@ int uhd_device::check_rx_md_err(uhd::rx_metadata_t &md, ssize_t num_smpls)
 
 	// Monotonicity check
 	if (ts < prev_ts) {
-		LOG(ALARM) << "UHD: Loss of monotonic: " << ts.get_real_secs();
-		LOG(ERROR) << "UHD: Current time: " << ts.get_real_secs();
-		LOG(ERROR) << "UHD: Previous time: " << prev_ts.get_real_secs();
+		LOG(ALARM) << "UHD: Loss of monotonic time";
+		LOG(ALARM) << "Current time: " << ts.get_real_secs() << ", " 
+			   << "Previous time: " << prev_ts.get_real_secs();
 		return ERROR_TIMING;
 	} else {
 		prev_ts = ts;

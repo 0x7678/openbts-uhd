@@ -272,7 +272,7 @@ double USRPDevice::setTxGain(double dB) {
    LOG(NOTICE) << "Setting TX gain to " << dB << " dB.";
 
    if (!m_dbTx->set_gain(dB))
-     LOG(ERR) << "Error setting TX gain";
+     LOG(ERROR) << "Error setting TX gain";
 
    writeLock.unlock();
   
